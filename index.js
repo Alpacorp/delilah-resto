@@ -3,13 +3,12 @@ const server = express();
 const port = 5000;
 const bodyparser = require("body-parser");
 const jwt = require("jsonwebtoken");
-const mysql2 = require("mysql2");
 const { sequelize } = require("./db_connect");
 
 server.use(bodyparser.json());
 
 server.get('/orders', (req, res) => {
-    sequelize.query('SELECT * FROM resto_orders', {
+    sequelize.query('SELECT resto_orders.*, resto_products.*, resto_method_paid_order.* FROM resto_orders INNER JOIN resto_method_paid_order, resto_products', {
             type: sequelize.QueryTypes.SELECT
         })
         .then((orders) => {
