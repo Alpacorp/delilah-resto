@@ -43,5 +43,11 @@ FROM resto_orders
 ORDER BY id_order ASC
 
 
+SELECT id_order, date_order, q_product, total_order, name_status, type_cash, name_product, description_product
+FROM resto_orders
+    INNER JOIN resto_status_order ON resto_orders.status_order = resto_status_order.id_status
+    INNER JOIN resto_method_paid_order ON resto_orders.method_paid_order = resto_method_paid_order.id_cash
+    INNER JOIN resto_products ON resto_orders.id_product = resto_products.id_product
+
 INSERT INTO resto_orders
 VALUES(null, null, 2, 100, 2, 2, 2, 2, (q_product*total_order))

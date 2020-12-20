@@ -1,24 +1,24 @@
 {
-  "name": "delilah-resto",
-  "version": "1.0.0",
-  "description": "backend for platform to restaurant orders",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "delilah",
-    "resto"
-  ],
-  "author": "Alejandro Palacios Arevalo",
-  "license": "MIT",
-  "dependencies": {
-    "bcrypt": "^5.0.0",
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
-    "mysql2": "^2.2.5",
-    "nodemon": "^2.0.6",
-    "sequelize": "^6.3.5"
-  }
+    "name": "delilah-resto",
+    "version": "1.0.0",
+    "description": "backend for platform to restaurant orders",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "delilah",
+        "resto"
+    ],
+    "author": "Alejandro Palacios Arevalo",
+    "license": "MIT",
+    "dependencies": {
+        "bcrypt": "^5.0.0",
+        "body-parser": "^1.19.0",
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1",
+        "mysql2": "^2.2.5",
+        "nodemon": "^2.0.6",
+        "sequelize": "^6.3.5"
+    }
 }
