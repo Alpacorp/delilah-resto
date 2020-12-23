@@ -18,8 +18,12 @@ const {
 server.use(bodyparser.json());
 
 /*======================================================================================================
-END POINTS | ORDERS | ADMINISTRATORS ||
+END POINTS | ORDERS
 =======================================================================================================*/
+
+/*==================
+ADMINISTRATORS
+==================*/
 
 //Create
 
@@ -37,9 +41,12 @@ server.post('/orders', [validateToken, validateRolUser], (req, res) => {
                     res.status(201).json({ message: "Data order insert successfully" });
                 })
                 .catch((error) => {
-                    res.json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
+                    res.status(404).json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
                 });
         })
+        .catch((error) => {
+            res.status(404).json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
+        });
 });
 
 //Get
@@ -49,7 +56,9 @@ server.get('/orders', [validateToken, validateRolUser], (req, res) => {
             type: sequelize.QueryTypes.SELECT
         })
         .then((orders) => {
-            res.json(orders);
+            res.json({
+                message: `The total number of orders registered in delilah resto is '${orders.length}' `,
+                orders: orders});
         })
         .catch((error) => {
             res.json(error);
@@ -119,14 +128,18 @@ server.delete('/orders/:id', [validateToken, validateRolUser], (req, res) => {
 });
 
 /*======================================================================================================
-END POINTS | ORDERS | COSTUMERS
+END POINTS | ORDERS
 =======================================================================================================*/
+
+/*==================
+COSTUMERS
+==================*/
 
 //Create order costumer
 
 server.post('/order', [fieldsEmptyOrderCostumer, validateToken], (req, res) => {
     const { q_product, method_paid_order, id_product } = req.body;
-    sequelize.query('SELECT price_product FROM resto_products WHERE id_product = ?', {
+    sequelize.query('SELECT * FROM resto_products WHERE id_product = ?', {
             type: sequelize.QueryTypes.SELECT,
             replacements: [id_product]
         })
@@ -138,11 +151,13 @@ server.post('/order', [fieldsEmptyOrderCostumer, validateToken], (req, res) => {
                     res.json({ message: "Order created successfully" });
                 })
                 .catch((error) => {
-                    res.json(error);
+                    res.status(404).json({
+                        message: "One or more fields have erroneous or non-existing information, please review the information you submit again."});
                 });
         })
         .catch((error) => {
-            res.json(error);
+            res.status(404).json({
+                message: "One or more fields have erroneous or non-existing information, please review the information you submit again."});
         });
 });
 
@@ -156,7 +171,7 @@ server.get('/order', [validateToken], (req, res) => {
         .then((order) => {
             if (order[0]) {
                 res.json({
-                    message: `Hi '${req.token[0].name_user}', these are your orders`,
+                    message: `Hi '${req.token[0].name_user}', these are your '${order.length}' orders`,
                     order: order
                 });
             } else {
@@ -191,7 +206,7 @@ server.put('/order/:id', [fieldsEmptyOrderCostumer, validateToken], (req, res) =
                                 res.status(200).json({ message: "Order update successfully, check it out in endpoint 'GET | order costumer'" });
                             })
                             .catch((error) => {
-                                res.json({ error: `Hi ${req.token[0].name_user}, one or more fields have erroneous or non-existing information, please review the information you submit again.` });
+                                res.status(409).json({ error: `Hi ${req.token[0].name_user}, one or more fields have erroneous or non-existing information, please review the information you submit again.` });
                             });
                     };
                 })
@@ -202,8 +217,12 @@ server.put('/order/:id', [fieldsEmptyOrderCostumer, validateToken], (req, res) =
 });
 
 /*======================================================================================================
-END POINTS | PRODUCTS | ADMINISTRATORS
+END POINTS | PRODUCTS
 =======================================================================================================*/
+
+/*==================
+ADMINISTRATORS
+==================*/
 
 //Create
 
@@ -224,7 +243,9 @@ server.get('/products', [validateToken, validateRolUser], (req, res) => {
             type: sequelize.QueryTypes.SELECT
         })
         .then((products) => {
-            res.json(products);
+            res.json({
+                message: `The total number of products registered in delilah resto is '${products.length}' `,
+                products: products});
         });
 });
 
@@ -285,8 +306,12 @@ server.delete('/products/:id', [validateToken, validateRolUser], (req, res) => {
 });
 
 /*======================================================================================================
-END POINTS | PRODUCTS | COSTUMERS
+END POINTS | PRODUCTS
 =======================================================================================================*/
+
+/*==================
+COSTUMERS
+==================*/
 
 //Get products costumer
 
@@ -306,8 +331,12 @@ server.get('/menu', [validateToken], (req, res) => {
 });
 
 /*======================================================================================================
-END POINTS | USERS | ADMINISTRATORS
+END POINTS | USERS
 =======================================================================================================*/
+
+/*==================
+ADMINISTRATORS
+==================*/
 
 //Create
 
@@ -329,7 +358,9 @@ server.get('/users', [validateToken, validateRolUser], (req, res) => {
             type: sequelize.QueryTypes.SELECT
         })
         .then((users) => {
-            res.json(users);
+            res.json({
+                message: `The total number of registered users in delilah resto is '${users.length}' :) `,
+                users: users});
         })
         .catch((error) => {
             res.json(error);
@@ -396,8 +427,12 @@ server.delete('/users/:id', [validateToken, validateRolUser], (req, res) => {
 });
 
 /*======================================================================================================
-END POINTS | USERS | COSTUMERS
+END POINTS | USERS
 =======================================================================================================*/
+
+/*==================
+COSTUMERS
+==================*/
 
 //Update user costumer
 
@@ -416,8 +451,12 @@ server.put('/user', [validateToken], (req, res) => {
 });
 
 /*======================================================================================================
-END POINTS | ALL USERS
+END POINTS
 =======================================================================================================*/
+
+/*==================
+ALL USERS
+==================*/
 
 //Login
 

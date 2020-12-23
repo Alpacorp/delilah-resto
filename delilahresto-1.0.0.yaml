@@ -1,0 +1,671 @@
+---
+openapi: 3.0.0
+info:
+  title: Delilah Resto API
+  description: This a documentation to API Delilah Resto, a restaurant with costumers and admin users
+  termsOfService: http://localhost/terms
+  contact:
+    name: Alejandro Palacios Arévalo
+    url: https://www.alpacorp.net
+    email: alejandro.palacios88@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: http://localhost:5000/
+  description: root to location platform
+- url: https://virtserver.swaggerhub.com/Alpacorp/delilahresto/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: Administrators
+  description: Links that only administrators will be able to access and do different operations on them
+- name: Costumers
+  description: Links that registered customers in delilah will be able to access
+- name: All Users
+  description: Links to which both customers and administrators will be able to access in delilah subtracted
+paths:
+  /login:
+    post:
+      tags:
+      - All Users
+      summary: All user  authenticate
+      operationId: post-login
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              email: testadmin@gmail.com
+              password: Colombia2020
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: login success.
+                information: Un gusto tenerte por acá 'testadmin', tu rol asignado es 'Costumer', con el podrás acceder a las opciones habilitadas para ti en Delilah Restó. La forma como lo puedes hacer es la siguiente, en cada ruta que vayas acceder deberás crear en la pestaña 'Headers' una nueva fila con un 'Key' d nombre 'Authorization' y un 'Value' con la información del token a continuación copia desde la palabra 'Bearer' hasta el final y pégalo en ese campo.
+                token: Bearer eyJhbGciOiJIUzI1NiJ9.W3siaWRfdXNlciI6MzAsIm5hbWVfdXNlciI6InRlc3RhZG1pbiIsImVtYWlsX3VzZXIiOiJ0ZXN0YWRtaW5AZ21haWwuY29tIiwiaWQiOjIsInJvbCI6IkNvc3R1bWVyIn1d.HFVwtnbmlJXb2g_zn7JInbSWWzEBQec9Rmtq5YRlHiM.
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: Invalid email or password
+  /users:
+    get:
+      tags:
+      - Administrators
+      summary: Only admins can see the total number of registered users as well as all their information
+      operationId: get-auth-admin-users
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: The total number of registered users in delilah resto is 'number' :)
+                users:
+                  id_user: 1
+                  name_user: Alejandro Magno
+                  email_user: alejandro.palacios88@gmail.com
+                  phone_user: 3164738344
+                  adress_user: Cra 14 este Soacha
+                  pass_user: $2b$10$z.XZcLWu2sS9Q10wXFi.NuAz8b/EmGte9t8ZV19vee2FmyWL115K6
+                  date_register: 2020-12-20T18:41:48.000Z
+                  rol_id: 2
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+    post:
+      tags:
+      - All Users
+      summary: All user can register in delilah restó
+      operationId: post-register
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name_user: testadmin
+              email_user: testadmin@gmail.com
+              phone_user: 32112345678
+              adress_user: Calle 3 No. 12 - 09
+              pass_user: Colombia2020
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                message: User created successfully, go to 'POST' user login' to log in =>
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: The user registered with the email already exists, your request is not valid, please check again.
+  /users/id:
+    put:
+      tags:
+      - Administrators
+      summary: Only admins can update overviews of registered users
+      operationId: put-auth-admin-users
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name_user: testadminuser
+              email_user: testadmin3@gmail.com
+              phone_user: 3178542311
+              adress_user: Mexico colonia 12
+              rol_id: 1
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: User update successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: There was an error in the user update, the indicated 'id' does not exist
+    delete:
+      tags:
+      - Administrators
+      summary: Only admins can completely delete a user's information or record
+      operationId: delete-auth-admin-users
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Product deleted successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: There was an error deleting the requested user with the 'id' as it does not exist in the database
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              example:
+                message: You can't delete this user because it has associated information in the 'resto_order' table
+  /products:
+    get:
+      tags:
+      - Administrators
+      summary: Only admin get information all products avaible
+      operationId: get-auth-admin-products
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: The total number of products registered in delilah resto is 'number'
+                products:
+                  id_product: 1
+                  name_product: Bagel del Salmón
+                  description_product: Ensalada de lechuga, zanahoria y salmón servidos a 10 grados de temperatura con aderezo sabor a limón.
+                  price_product: 425
+                  available_q_product: 10
+                  date_created_product: 2020-12-19T18:51:03.000Z
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+    post:
+      tags:
+      - Administrators
+      summary: Admin can create new products
+      operationId: post-auth-admin-products
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name_product: Arroz con pollo
+              description_product: Arroz combinado con pollo cocinado desmechado, habichuelas, arbejas, zanahoria y huevo de codornis
+              price_product: 320
+              available_q_product: 10
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                message: Product added successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+  /products/id:
+    put:
+      tags:
+      - Administrators
+      summary: only the admin can update the information of any product using the id
+      operationId: put-auth-admin-products
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name_product: Arroz con pollo
+              description_product: Arroz combinado con pollo cocinado desmechado, habichuelas, arbejas, zanahoria y huevo de codornis
+              price_product: 320
+              available_q_product: 10
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Product update successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: There was an error in the product update, the indicated 'id' does not exist
+    delete:
+      tags:
+      - Administrators
+      summary: Only the admin can delete any product by id
+      operationId: delete-auth-admin-products
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Product deleted successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: There was an error deleting the requested product with the 'id' as it does not exist in the database
+  /menu:
+    get:
+      tags:
+      - Costumers
+      summary: Only authenticated customers can see the contents of the menu
+      operationId: get-auth-costu-products
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Hi 'name user', delight in our food menu
+                menu:
+                  id_product: 1
+                  name_product: Bagel del Salmón
+                  description_product: Ensalada de lechuga, zanahoria y salmón servidos a 10 grados de temperatura con aderezo sabor a limón.
+                  price_product: 425
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+  /orders:
+    get:
+      tags:
+      - Administrators
+      summary: Only admins can get all the information from the generated orders
+      operationId: get-auth-admin-orders
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: The total number of orders registered in delilah resto is '19'
+                orders:
+                  id_order: 1
+                  date_order: 2020-12-20T05:55:05.000Z
+                  name_status: Confirmed
+                  type_cash: Cash
+                  q_product: 1
+                  price_product: 425
+                  total_order: 1200
+                  name_product: Bagel del Salmón
+                  description_product: Ensalada de lechuga, zanahoria y salmón servidos a 10 grados de temperatura con aderezo sabor a limón.
+                  name_user: Karen Estafany Palacios Luna
+                  email_user: karen.palacios@hotmail.com
+                  phone_user: 3209876423
+                  adress_user: Calle falsa 123
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+    post:
+      tags:
+      - Administrators
+      summary: Only admins can create a new order
+      operationId: post-auth-admin-orders
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              q_product: 5
+              status_order: 1
+              method_paid_order: 2
+              id_product: 5
+              id_user: 1
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                message: Data order insert successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: One or more fields have erroneous or non-existing information, please review the information you submit again.
+  /orders/id:
+    put:
+      tags:
+      - Administrators
+      summary: Only admins can update existing information for a previously created order
+      operationId: put-auth-admin-orders
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              q_product: 1
+              status_order: 4
+              method_paid_order: 1
+              id_product: 1
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Order update successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: There was an error in the order update, the indicated 'id' does not exist
+    delete:
+      tags:
+      - Administrators
+      summary: Only the admin can delete any order by id
+      operationId: delete-auth-admin-orders
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Order deleted successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: There was an error deleting the requested order with the 'id' as it does not exist in the database
+  /order:
+    get:
+      tags:
+      - Costumers
+      summary: Only authenticated customers can see the contents of orders created
+      operationId: get-auth-costu-orders
+      parameters: []
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Hi 'name user', these are your 'number' orders
+                order:
+                  id_order: 1
+                  date_order: 2020-12-20T05:55:05.000Z
+                  q_product: 1
+                  total_order: 1200
+                  name_status: Confirmed
+                  type_cash: Cash
+                  name_product: Bagel del Salmón
+                  description_product: Ensalada de lechuga, zanahoria y salmón servidos a 10 grados de temperatura con aderezo sabor a limón.
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: You don't have orders generated, you can go to 'POST' order costumer create' and create your first order, go!!
+    post:
+      tags:
+      - Costumers
+      summary: Only authenticated customers can create new orders
+      operationId: post-auth-costu-order
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              q_product: 6
+              method_paid_order: 2
+              id_product: 5
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              example:
+                message: Order created successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: You don't have the necessary permissions to access this content :(
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: One or more fields have erroneous or non-existing information, please review the information you submit again.
+  /order/id:
+    put:
+      tags:
+      - Costumers
+      summary: Only authenticated customers can update pre-created orders
+      operationId: put-auth-costu-order
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              q_product: 3
+              method_paid_order: 1
+              id_product: 6
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: Order update successfully, check it out in endpoint 'GET | order costumer
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              example:
+                message: There was an error updating the order, the 'id' indicated does not correspond to orders placed on your own
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              example:
+                message: Hi 'name user', one or more fields have erroneous or non-existing information, please review the information you submit again.
+  /user:
+    put:
+      tags:
+      - Costumers
+      summary: Only the authenticated user can update their profile's personal information
+      operationId: put-auth-costu-user
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name_user: Alejandro Magno
+              email_user: alejandro.palacios88@gmail.com
+              phone_user: 3164738344
+              adress_user: Cra 14 este Soacha
+              pass_user: estefany05
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              example:
+                message: User update successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: You're not authenticated or your token is wrong to view this content
+components: {}
