@@ -18,28 +18,34 @@ const {
 server.use(bodyparser.json());
 
 /*======================================================================================================
-END POINTS | ORDERS | ADMINISTRATORS
+END POINTS | ORDERS | ADMINISTRATORS ||
 =======================================================================================================*/
 
 //Create
 
 server.post('/orders', [validateToken, validateRolUser], (req, res) => {
-    const { q_product, total_order, status_order, method_paid_order, id_product, id_user } = req.body;
-    sequelize.query('INSERT INTO resto_orders VALUES(null,null,?,?,?,?,?,?)', {
-            replacements: [q_product, total_order, status_order, method_paid_order, id_product, id_user]
+    const { q_product, status_order, method_paid_order, id_product, id_user } = req.body;
+    sequelize.query('SELECT price_product FROM resto_products WHERE id_product = ?', {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: [id_product]
         })
-        .then((orders) => {
-            res.status(201).json({ message: "Data order insert successfully" });
+        .then((product) => {
+            sequelize.query('INSERT INTO resto_orders VALUES(null,null,?,?,?,?,?,?)', {
+                    replacements: [q_product, q_product * product[0].price_product, status_order, method_paid_order, id_product, id_user]
+                })
+                .then((orders) => {
+                    res.status(201).json({ message: "Data order insert successfully" });
+                })
+                .catch((error) => {
+                    res.json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
+                });
         })
-        .catch((error) => {
-            res.json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
-        });
 });
 
 //Get
 
 server.get('/orders', [validateToken, validateRolUser], (req, res) => {
-    sequelize.query('SELECT id_order, date_order, name_status, type_cash, total_order, name_product, description_product, name_user, email_user, phone_user, adress_user FROM resto_orders INNER JOIN resto_status_order ON resto_orders.status_order = resto_status_order.id_status INNER JOIN resto_method_paid_order ON resto_orders.method_paid_order = resto_method_paid_order.id_cash INNER JOIN resto_products ON resto_orders.id_product = resto_products.id_product INNER JOIN resto_users ON resto_orders.id_user = resto_users.id_user ORDER BY id_order ASC', {
+    sequelize.query('SELECT id_order, date_order, name_status, type_cash, q_product, price_product, total_order, name_product, description_product, name_user, email_user, phone_user, adress_user FROM resto_orders INNER JOIN resto_status_order ON resto_orders.status_order = resto_status_order.id_status INNER JOIN resto_method_paid_order ON resto_orders.method_paid_order = resto_method_paid_order.id_cash INNER JOIN resto_products ON resto_orders.id_product = resto_products.id_product INNER JOIN resto_users ON resto_orders.id_user = resto_users.id_user ORDER BY id_order ASC', {
             type: sequelize.QueryTypes.SELECT
         })
         .then((orders) => {
@@ -54,41 +60,61 @@ server.get('/orders', [validateToken, validateRolUser], (req, res) => {
 
 server.put('/orders/:id', [validateToken, validateRolUser], (req, res) => {
     const id = req.params.id;
-    const { q_product, total_order, status_order, method_paid_order, id_product, id_user } = req.body;
-    sequelize.query('SELECT * FROM resto_orders WHERE id_order = ?', {
+    const { q_product, status_order, method_paid_order, id_product } = req.body;
+    sequelize.query('SELECT price_product FROM resto_products WHERE id_product = ?', {
             type: sequelize.QueryTypes.SELECT,
-            replacements: [id, id_user]
+            replacements: [id_product]
         })
-        .then((order) => {
-            if (order[0].id_order == id) {
-                sequelize.query('UPDATE resto_orders SET q_product = ?, total_order = ?, status_order = ?, method_paid_order = ?, id_product = ?, id_user = ? WHERE id_order = ?', {
-                        replacements: [q_product, total_order, status_order, method_paid_order, id_product, id_user, id]
-                    })
-                    .then((order) => {
-                        res.status(200).json({ message: "Order update successfully" });
-                    })
-                    .catch((error) => {
-                        res.json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
-                    });
-            };
+        .then((product) => {
+            sequelize.query('SELECT * FROM resto_orders WHERE id_order = ?', {
+                    type: sequelize.QueryTypes.SELECT,
+                    replacements: [id]
+                })
+                .then((order) => {
+                    if (order[0].id_order == id) {
+                        sequelize.query('UPDATE resto_orders SET q_product = ?, total_order = ?, status_order = ?, method_paid_order = ?, id_product = ? WHERE id_order = ?', {
+                                replacements: [q_product, product[0].price_product * q_product, status_order, method_paid_order, id_product, id]
+                            })
+                            .then((order) => {
+                                res.status(200).json({ message: "Order update successfully" });
+                            })
+                            .catch((error) => {
+                                res.json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
+                            });
+                    };
+                })
+                .catch((error) => {
+                    res.status(404).json({ message: "There was an error in the order update, the indicated 'id' does not exist" });
+                });
         })
-        .catch((error) => {
-            res.status(404).json({ message: "There was an error in the order update, the indicated 'id' does not exist" });
-        });
 });
 
 //Delete
 
 server.delete('/orders/:id', [validateToken, validateRolUser], (req, res) => {
     const id = req.params.id;
-    sequelize.query('DELETE FROM resto_orders WHERE id_order = ?', {
+    sequelize.query('SELECT * FROM resto_orders WHERE id_order = ?', {
+            type: sequelize.QueryTypes.SELECT,
             replacements: [id]
         })
         .then((order) => {
-            res.json({ message: "Order deleted successfully" });
-        })
-        .catch((error) => {
-            res.json(error);
+            let checkOrder = false
+            for (let i = 0; i < order.length; i++) {
+                const element = order[i];
+                if (element.id_order == id) {
+                    checkOrder = true;
+                };
+            };
+            if (checkOrder) {
+                sequelize.query('DELETE FROM resto_orders WHERE id_order = ?', {
+                        replacements: [id]
+                    })
+                    .then((order) => {
+                        res.json({ message: "Order deleted successfully" });
+                    })
+            } else {
+                res.status(404).json({ message: "There was an error deleting the requested order with the 'id' as it does not exist in the database" });
+            };
         });
 });
 
@@ -230,14 +256,31 @@ server.put('/products/:id', [validateToken, validateRolUser], (req, res) => {
 
 server.delete('/products/:id', [validateToken, validateRolUser], (req, res) => {
     const id = req.params.id;
-    sequelize.query('DELETE FROM resto_products WHERE id_product = ?', {
+    sequelize.query('SELECT * FROM resto_products WHERE id_product = ?', {
+            type: sequelize.QueryTypes.SELECT,
             replacements: [id]
         })
         .then((product) => {
-            res.json({ message: "Product deleted successfully" });
-        })
-        .catch((error) => {
-            res.json(error);
+            let checkProduct = false;
+            for (let i = 0; i < product.length; i++) {
+                const element = product[i];
+                if (element.id_product = id) {
+                    checkProduct = true;
+                };
+            };
+            if (checkProduct) {
+                sequelize.query('DELETE FROM resto_products WHERE id_product = ?', {
+                        replacements: [id]
+                    })
+                    .then((product) => {
+                        res.json({ message: "Product deleted successfully" });
+                    })
+                    .catch((error) => {
+                        res.json(error);
+                    });
+            } else {
+                res.status(404).json({ message: "There was an error deleting the requested product with the 'id' as it does not exist in the database" });
+            };
         })
 });
 
@@ -324,15 +367,32 @@ server.put('/users/:id', [validateToken, validateRolUser], (req, res) => {
 
 server.delete('/users/:id', [validateToken, validateRolUser], (req, res) => {
     const id = req.params.id;
-    sequelize.query('DELETE FROM resto_users WHERE id_user = ?', {
+    sequelize.query('SELECT * FROM resto_users WHERE id_user = ?', {
+            type: sequelize.QueryTypes.SELECT,
             replacements: [id]
         })
         .then((user) => {
-            res.json({ message: "User deleted successfully" });
+            let checkUser = false;
+            for (let i = 0; i < user.length; i++) {
+                const element = user[i];
+                if (element.id_user == id) {
+                    checkUser = true;
+                };
+            };
+            if (checkUser) {
+                sequelize.query('DELETE FROM resto_users WHERE id_user = ?', {
+                        replacements: [id]
+                    })
+                    .then((user) => {
+                        res.json({ message: "User deleted successfully" });
+                    })
+                    .catch((error) => {
+                        res.status(409).json({ error: "You can't delete this user because it has associated information in the 'resto_order' table" });
+                    });
+            } else {
+                res.status(404).json({ message: "There was an error deleting the requested user with the 'id' as it does not exist in the database" })
+            }
         })
-        .catch((error) => {
-            res.status(409).json({ error: "You can't delete this user because it has associated information in the 'resto_order' table" });
-        });
 });
 
 /*======================================================================================================
