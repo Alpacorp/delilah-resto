@@ -55,14 +55,25 @@ server.get('/orders', [validateToken, validateRolUser], (req, res) => {
 server.put('/orders/:id', [validateToken, validateRolUser], (req, res) => {
     const id = req.params.id;
     const { q_product, total_order, status_order, method_paid_order, id_product, id_user } = req.body;
-    sequelize.query('UPDATE resto_orders SET q_product = ?, total_order = ?, status_order = ?, method_paid_order = ?, id_product = ?, id_user = ? WHERE id_order = ?', {
-            replacements: [q_product, total_order, status_order, method_paid_order, id_product, id_user, id]
+    sequelize.query('SELECT * FROM resto_orders WHERE id_order = ?', {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: [id, id_user]
         })
         .then((order) => {
-            res.status(200).json({ message: "Order update successfully" });
+            if (order[0].id_order == id) {
+                sequelize.query('UPDATE resto_orders SET q_product = ?, total_order = ?, status_order = ?, method_paid_order = ?, id_product = ?, id_user = ? WHERE id_order = ?', {
+                        replacements: [q_product, total_order, status_order, method_paid_order, id_product, id_user, id]
+                    })
+                    .then((order) => {
+                        res.status(200).json({ message: "Order update successfully" });
+                    })
+                    .catch((error) => {
+                        res.json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
+                    });
+            };
         })
         .catch((error) => {
-            res.json({ error: "One or more fields have erroneous or non-existing information, please review the information you submit again." });
+            res.status(404).json({ message: "There was an error in the order update, the indicated 'id' does not exist" });
         });
 });
 
@@ -123,7 +134,7 @@ server.get('/order', [validateToken], (req, res) => {
                     order: order
                 });
             } else {
-                res.json({ message: "you don't have orders generated, you can go to 'POST' order costumer create' and create your first order, go!!" });
+                res.status(404).json({ message: "You don't have orders generated, you can go to 'POST' order costumer create' and create your first order, go!!" });
             };
         })
         .catch((error) => {
@@ -136,24 +147,31 @@ server.get('/order', [validateToken], (req, res) => {
 server.put('/order/:id', [fieldsEmptyOrderCostumer, validateToken], (req, res) => {
     const id = req.params.id;
     const { q_product, method_paid_order, id_product } = req.body;
-    sequelize.query('SELECT price_product FROM resto_products WHERE id_product = ?', {
+    sequelize.query('SELECT * FROM resto_orders WHERE id_user = ? AND id_order = ?', {
             type: sequelize.QueryTypes.SELECT,
-            replacements: [id_product]
+            replacements: [req.token[0].id_user, id]
         })
-        .then((product) => {
-            // console.log(product);
-            sequelize.query('UPDATE resto_orders SET q_product = ?, total_order = ?, method_paid_order = ?, id_product = ? WHERE id_order = ? AND id_user = ?', {
-                    replacements: [q_product, product[0].price_product * q_product, method_paid_order, id_product, id, req.token[0].id_user]
+        .then((order) => {
+            sequelize.query('SELECT price_product FROM resto_products WHERE id_product = ?', {
+                    type: sequelize.QueryTypes.SELECT,
+                    replacements: [id_product]
                 })
-                .then((order) => {
-                    res.status(200).json({ message: "Order update successfully, check it out in endpoint 'GET | order costumer'" });
+                .then((product) => {
+                    if (order[0].id_order) {
+                        sequelize.query('UPDATE resto_orders SET q_product = ?, total_order = ?, method_paid_order = ?, id_product = ? WHERE id_order = ? AND id_user = ?', {
+                                replacements: [q_product, product[0].price_product * q_product, method_paid_order, id_product, id, req.token[0].id_user]
+                            })
+                            .then((order) => {
+                                res.status(200).json({ message: "Order update successfully, check it out in endpoint 'GET | order costumer'" });
+                            })
+                            .catch((error) => {
+                                res.json({ error: `Hi ${req.token[0].name_user}, one or more fields have erroneous or non-existing information, please review the information you submit again.` });
+                            });
+                    };
                 })
                 .catch((error) => {
-                    res.json({ error: `Hi ${req.token[0].name_user}, one or more fields have erroneous or non-existing information, please review the information you submit again.` });
+                    res.status(404).json({ message: "There was an error updating the order, the 'id' indicated does not correspond to orders placed on your own" });
                 });
-        })
-        .catch((error) => {
-            res.json(error);
         });
 });
 
@@ -169,7 +187,7 @@ server.post('/products', [validateToken, validateRolUser], (req, res) => {
             replacements: [name_product, description_product, price_product, available_q_product]
         })
         .then((products) => {
-            res.status(401).json({ message: "Product added successfully" });
+            res.status(201).json({ message: "Product added successfully" });
         })
 });
 
@@ -189,11 +207,22 @@ server.get('/products', [validateToken, validateRolUser], (req, res) => {
 server.put('/products/:id', [validateToken, validateRolUser], (req, res) => {
     const { name_product, description_product, price_product, available_q_product } = req.body;
     const id = req.params.id;
-    sequelize.query('UPDATE resto_products SET name_product = ?, description_product = ?, price_product = ?, available_q_product = ? WHERE id_product = ?', {
-            replacements: [name_product, description_product, price_product, available_q_product, id]
+    sequelize.query('SELECT * FROM resto_products WHERE id_product = ?', {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: [id]
         })
-        .then((products) => {
-            res.json({ message: "Product update successfully" });
+        .then((product) => {
+            if (product[0].id_product == id) {
+                sequelize.query('UPDATE resto_products SET name_product = ?, description_product = ?, price_product = ?, available_q_product = ? WHERE id_product = ?', {
+                        replacements: [name_product, description_product, price_product, available_q_product, id]
+                    })
+                    .then((products) => {
+                        res.json({ message: "Product update successfully" });
+                    });
+            }
+        })
+        .catch((error) => {
+            res.status(404).json({ message: "There was an error in the product update, the indicated 'id' does not exist" });
         });
 });
 
@@ -246,7 +275,7 @@ server.post('/users', [fieldsEmptySignUp, validateUserExisting], (req, res) => {
             replacements: [name_user, email_user, phone_user, adress_user, pass_encripted]
         })
         .then((users) => {
-            res.status(401).json({ message: "User created successfully, go to 'POST' user login' to log in =>" });
+            res.status(201).json({ message: "User created successfully, go to 'POST' user login' to log in =>" });
         });
 });
 
@@ -269,14 +298,25 @@ server.get('/users', [validateToken, validateRolUser], (req, res) => {
 server.put('/users/:id', [validateToken, validateRolUser], (req, res) => {
     const id = req.params.id;
     const { name_user, email_user, phone_user, adress_user, rol_id } = req.body;
-    sequelize.query('UPDATE resto_users SET name_user = ?, email_user = ?, phone_user = ?, adress_user = ?, rol_id = ? WHERE id_user = ?', {
-            replacements: [name_user, email_user, phone_user, adress_user, rol_id, id]
+    sequelize.query('SELECT * FROM resto_users WHERE id_user = ?', {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: [id]
         })
         .then((user) => {
-            res.status(200).json({ message: "User update successfully" })
+            if (user[0].id_user == id) {
+                sequelize.query('UPDATE resto_users SET name_user = ?, email_user = ?, phone_user = ?, adress_user = ?, rol_id = ? WHERE id_user = ?', {
+                        replacements: [name_user, email_user, phone_user, adress_user, rol_id, id]
+                    })
+                    .then((user) => {
+                        res.status(200).json({ message: "User update successfully" })
+                    })
+                    .catch((error) => {
+                        res.json(error);
+                    });
+            };
         })
         .catch((error) => {
-            res.json(error);
+            res.status(404).json({ message: "There was an error in the user update, the indicated 'id' does not exist" });
         });
 });
 
@@ -291,7 +331,7 @@ server.delete('/users/:id', [validateToken, validateRolUser], (req, res) => {
             res.json({ message: "User deleted successfully" });
         })
         .catch((error) => {
-            res.json({ error: "you can't delete this user because it has associated information in the 'resto_order' table" });
+            res.status(409).json({ error: "You can't delete this user because it has associated information in the 'resto_order' table" });
         });
 });
 
@@ -328,7 +368,6 @@ server.post('/login', [validateUserLogin], (req, res) => {
             replacements: [email]
         })
         .then((user) => {
-            // console.log(user);
             let passJson = JSON.stringify(user);
             let token = jwt.sign(passJson, signature);
             res.json({

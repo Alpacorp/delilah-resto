@@ -23,7 +23,7 @@ exports.validateUserLogin = (req, res, next) => {
             if (check == true) {
                 next();
             } else {
-                res.json({ message: "invalid email or password" });
+                res.status(404).json({ message: "Invalid email or password" });
             };
         });
 };
@@ -40,7 +40,7 @@ exports.validateToken = (req, res, next) => {
         }
     } catch (error) {
         function notFound(res) {
-            res.status(404).json({ error: "You're not authenticated or your token is wrong to view this content" });
+            res.status(401).json({ error: "You're not authenticated or your token is wrong to view this content" });
         };
         notFound(res);
     };
@@ -72,7 +72,7 @@ exports.validateRolUser = (req, res, next) => {
     if (checkToken[0].id == 1) {
         next();
     } else {
-        res.json({ message: "You don't have the necessary permissions to access this content :(" });
+        res.status(403).json({ message: "You don't have the necessary permissions to access this content :(" });
     };
 };
 
@@ -90,7 +90,7 @@ exports.validateUserExisting = (req, res, next) => {
                 };
             };
             if (emailCheck == true) {
-                res.json({ message: "The user registered with the email already exists, your request is not valid, please check again." })
+                res.status(401).json({ message: "The user registered with the email already exists, your request is not valid, please check again." })
             } else {
                 next();
             };
