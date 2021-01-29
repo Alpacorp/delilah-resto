@@ -1,6 +1,6 @@
 const express = require("express");
 const server = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 const bodyparser = require("body-parser");
 const jwt = require("jsonwebtoken");
 const signature = "hjtahsujlslppebIU";
